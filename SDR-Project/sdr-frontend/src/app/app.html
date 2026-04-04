@@ -1,0 +1,81 @@
+<div class="page">
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+
+    <button 
+      class="nav-btn"
+      [class.active]="currentView === 'verify'"
+      (click)="switchView('verify')">
+      Verification Panel
+    </button>
+
+    <button 
+      class="nav-btn"
+      [class.active]="currentView === 'dashboard'"
+      (click)="switchView('dashboard')">
+      Admin Dashboard
+    </button>
+
+  </div>
+
+  <!-- VERIFICATION PANEL -->
+  <div *ngIf="currentView === 'verify'" class="card">
+
+    <h1>SDR Security Verification</h1>
+    <p class="subtitle">Device Authentication Interface</p>
+
+    <div class="form-group">
+      <label>Device ID</label>
+      <input type="text" [(ngModel)]="deviceId">
+    </div>
+
+    <div class="form-group">
+      <label>API Key</label>
+      <input type="text" [(ngModel)]="apiKey">
+    </div>
+
+    <button (click)="verifyDevice()">Verify Device</button>
+
+    <div *ngIf="result" style="margin-top:20px;">
+      <div
+        [style.background]="result.includes('AUTHORIZED') ? '#e8f8f1' : '#fdecea'"
+        [style.color]="result.includes('AUTHORIZED') ? '#1e8449' : '#c0392b'"
+        style="padding:12px; border-radius:6px; font-weight:bold;"
+      >
+        {{ result.toUpperCase() }}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DASHBOARD -->
+  <div *ngIf="currentView === 'dashboard'" class="card dashboard">
+
+    <h2>Security Monitoring Dashboard</h2>
+
+    <div class="summary">
+      <div><b>Total:</b> {{total}}</div>
+      <div class="green"><b>Authorized:</b> {{authorized}}</div>
+      <div class="red"><b>Rejected:</b> {{rejected}}</div>
+    </div>
+
+    <table>
+      <tr>
+        <th>Device</th>
+        <th>Status</th>
+        <th>Time</th>
+      </tr>
+
+      <tr *ngFor="let log of logs">
+        <td>{{log.deviceId}}</td>
+        <td [style.color]="log.status === 'AUTHORIZED' ? 'green' : 'red'">
+          {{log.status}}
+        </td>
+        <td>{{log.timestamp}}</td>
+      </tr>
+    </table>
+
+  </div>
+
+</div>
