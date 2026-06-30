@@ -54,4 +54,21 @@ public class HelloController {
         }
         return ResponseEntity.ok(logRepository.findAll());
     }
+
+    // ✅ DEVICE HISTORY — logs filtered by deviceId
+    @GetMapping("/logs/{deviceId}")
+    public ResponseEntity<?> getDeviceHistory(
+            @RequestHeader(value = "X-Admin-Token", required = false) String token,
+            @PathVariable String deviceId) {
+        if (token == null || !AdminController.isValidToken(token)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "UNAUTHORIZED"));
+        }
+        List<VerificationLog> history = logRepository.findAll()
+                .stream()
+                .filter(l -> deviceId.equals(l.getDeviceId()))
+                .sorted((a, b) -> b.getTimestamp().compareTo(a.getTimestamp()))
+                .toList();
+        return ResponseEntity.ok(history);
+    }
 }
