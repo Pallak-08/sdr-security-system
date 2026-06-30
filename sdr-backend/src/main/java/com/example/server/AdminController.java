@@ -80,6 +80,45 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("status", "ADDED"));
     }
 
+    // DELETE DEVICE (requires valid session token)
+    @DeleteMapping("/delete-device/{deviceId}")
+    public ResponseEntity<Map<String, String>> deleteDevice(
+            @RequestHeader(value = "X-Admin-Token", required = false) String token,
+            @PathVariable String deviceId) {
+
+        if (!isValidToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "UNAUTHORIZED"));
+        }
+
+        try {
+            File file = new File(FILE_PATH);
+            if (!file.exists()) {
+                return ResponseEntity.badRequest().body(Map.of("status", "NOT_FOUND"));
+            }
+
+            Properties props = new Properties();
+            try (FileInputStream fis = new FileInputStream(file)) {
+                props.load(fis);
+            }
+
+            if (!props.containsKey(deviceId)) {
+                return ResponseEntity.badRequest().body(Map.of("status", "NOT_FOUND"));
+            }
+
+            props.remove(deviceId);
+
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                props.store(fos, null);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ResponseEntity.ok(Map.of("status", "DELETED"));
+    }
+
     // GET DEVICES (requires valid session token)
     @GetMapping("/devices")
     public ResponseEntity<?> getDevices(
