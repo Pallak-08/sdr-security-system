@@ -31,7 +31,9 @@ public class VerificationService {
         }
         Map<String, String> devices = new java.util.HashMap<>();
         for (String key : props.stringPropertyNames()) {
-            devices.put(key, props.getProperty(key));
+            if (!key.isBlank()) {
+                devices.put(key, props.getProperty(key));
+            }
         }
         return devices;
     }

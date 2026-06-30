@@ -16,6 +16,10 @@ public class AdminController {
     // Session tokens issued on login (in-memory; sufficient for demo scope)
     private static final Set<String> activeSessions = new HashSet<>();
 
+    public static boolean isValidToken(String token) {
+        return token != null && activeSessions.contains(token);
+    }
+
     // LOGIN
     @PostMapping("/login")
     public Map<String, String> login(@RequestBody Map<String, String> req) {
@@ -41,9 +45,17 @@ public class AdminController {
             @RequestHeader(value = "X-Admin-Token", required = false) String token,
             @RequestBody Map<String, String> req) {
 
-        if (token == null || !activeSessions.contains(token)) {
+        if (!isValidToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("status", "UNAUTHORIZED"));
+        }
+
+        String deviceId = req.get("deviceId");
+        String apiKey = req.get("apiKey");
+
+        if (deviceId == null || deviceId.isBlank() || apiKey == null || apiKey.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("status", "ERROR", "message", "Device ID and API Key are required"));
         }
 
         try {
@@ -55,7 +67,7 @@ public class AdminController {
                 props.load(fis);
             }
 
-            props.setProperty(req.get("deviceId"), req.get("apiKey"));
+            props.setProperty(deviceId, apiKey);
 
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 props.store(fos, null);
@@ -73,7 +85,7 @@ public class AdminController {
     public ResponseEntity<?> getDevices(
             @RequestHeader(value = "X-Admin-Token", required = false) String token) {
 
-        if (token == null || !activeSessions.contains(token)) {
+        if (!isValidToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("status", "UNAUTHORIZED"));
         }
@@ -90,7 +102,9 @@ public class AdminController {
             }
 
             for (String key : props.stringPropertyNames()) {
-                result.put(key, props.getProperty(key));
+                if (!key.isBlank()) {  // skip corrupt empty-key entries
+                    result.put(key, props.getProperty(key));
+                }
             }
 
         } catch (Exception e) {
