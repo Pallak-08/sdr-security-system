@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+Icon?
+**/.DS_Store
+
+# Documents (not part of the codebase)
+*.docx
+*.pdf
+untitled folder/
+
+# H2 database files (auto-generated at runtime)
+sdr-backend/data/
+
+# Maven build output
+sdr-backend/target/
